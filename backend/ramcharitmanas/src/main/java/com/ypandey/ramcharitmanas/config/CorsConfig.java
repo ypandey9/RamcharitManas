@@ -19,7 +19,9 @@ public class CorsConfig {
 
         config.setAllowedOrigins(
                 List.of(
-                        "http://localhost:3000","http://192.168.1.6:3000"
+                        "http://localhost:3000",
+                        "http://localhost:5173",
+                        "https://ramcharitmanas-frontend.onrender.com"
                 )
         );
 
