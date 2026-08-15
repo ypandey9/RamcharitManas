@@ -20,6 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.ypandey.ramcharitmanas.repository.UserRepository;
 import com.ypandey.ramcharitmanas.service.AuthService;
+
+import jakarta.validation.Valid;
+
 import com.ypandey.ramcharitmanas.model.User;
 
 @RestController
@@ -103,8 +106,10 @@ String token =
 
 @PostMapping("/register")
 public RegisterResponse register(
-        @RequestBody RegisterRequest request
+       @Valid @RequestBody RegisterRequest request
 ){
+
+        System.out.println("REGISTER CONTROLLER CALLED");
         return authService.register(request);
 }
     

@@ -49,7 +49,7 @@ export default function SearchPage() {
           5
         );
 
-        console.log("Search Response:", data);
+        //console.log("Search Response:", data);
 
         const formatted =
           (data.content || []).map(verse => ({

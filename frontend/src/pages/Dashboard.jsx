@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "../services/userService";
-import { getReadingProgress } from "../services/readingProgressService";
 import ContinueReadingCard from "../components/ContinueReadingCard";
 import { getDashboardStats } from "../services/dashboardService";
 import { useNavigate } from "react-router-dom";
 import kandNames from "../data/kandNames";
+import Navbar from "../components/Navbar";
+
 
 export default function Dashboard() {
 
     const [user, setUser] = useState(null);
-    const [readingProgress, setReadingProgress] = useState(null);
     const [stats,setStats]=useState(null);
     const navigate = useNavigate();
 
@@ -31,29 +31,6 @@ export default function Dashboard() {
         }
 
         loadUser();
-
-    }, []);
-
-    useEffect(() => {
-
-        async function loadReadingProgress() {
-
-            try {
-
-                const progress =
-                    await getReadingProgress();
-
-                setReadingProgress(progress);
-
-            } catch (error) {
-
-                console.error(error);
-
-            }
-
-        }
-
-        loadReadingProgress();
 
     }, []);
 
@@ -80,9 +57,17 @@ export default function Dashboard() {
 
 },[]);
 
+const kandKey = stats?.currentKand;
+
+//console.log("KandKey ",kandKey);
+
     return (
+        <>
+        <Navbar />
 
         <div className="min-h-screen bg-orange-50 py-8">
+
+            
 
             <div className="max-w-6xl mx-auto px-6">
 
@@ -262,7 +247,11 @@ Bookmarks
 </div>
 
 
-<div className="bg-white rounded-2xl shadow-md p-6 text-center">
+<div
+onClick={() =>navigate(
+    `/kand/${kandKey}`)}
+    
+className="bg-white rounded-2xl shadow-md p-6 text-center">
 
 <h2 className="text-4xl">
 
@@ -347,6 +336,8 @@ Active Reader
 
 
         </div>
+
+        </>
 
     );
 

@@ -105,6 +105,10 @@ public SecurityFilterChain securityFilterChain(
 .requestMatchers("/api/dashboard/**")
 .authenticated()
 
+.requestMatchers("/api/users/me")
+.authenticated()
+
+
     // Delete Verse
     .requestMatchers(
             HttpMethod.DELETE,

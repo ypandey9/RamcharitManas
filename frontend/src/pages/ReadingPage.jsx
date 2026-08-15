@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import VerseCard from "../components/VerseCard";
 import { getReadingPage } from "../services/readingPageService";
 
-import { getVerseById,getVerseNavigation } from "../services/verseService";
+import { getVerseNavigation } from "../services/verseService";
 
 
 export default function ReadingPage() {

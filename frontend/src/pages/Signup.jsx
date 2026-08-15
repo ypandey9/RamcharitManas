@@ -1,38 +1,30 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
 import { registerUser } from "../services/authService";
 
 export default function Signup() {
 
     const navigate = useNavigate();
 
+    // ==========================================
+    // Registration Success Countdown
+    // ==========================================
+
     const [countdown, setCountdown] = useState(20);
 
     const [registeredUser, setRegisteredUser] = useState(null);
 
-    const [loading, setLoading] = useState(false);
-
-    const [message, setMessage] = useState("");
-
-    const [error, setError] = useState("");
-
-    const [formData, setFormData] = useState({
-
-        fullName: "",
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: ""
-
-    });
 
     useEffect(() => {
 
-        if (!registeredUser) return;
+        if (!registeredUser) {
+            return;
+        }
 
         const interval = setInterval(() => {
 
-            setCountdown(prev => {
+            setCountdown((prev) => {
 
                 if (prev <= 1) {
 
@@ -41,7 +33,6 @@ export default function Signup() {
                     navigate("/");
 
                     return 0;
-
                 }
 
                 return prev - 1;
@@ -54,6 +45,33 @@ export default function Signup() {
 
     }, [registeredUser, navigate]);
 
+
+    // ==========================================
+    // Form Data
+    // ==========================================
+
+    const [formData, setFormData] = useState({
+
+        fullName: "",
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: ""
+
+    });
+
+
+    const [loading, setLoading] = useState(false);
+
+    const [message, setMessage] = useState("");
+
+    const [error, setError] = useState("");
+
+
+    // ==========================================
+    // Handle Input Change
+    // ==========================================
+
     const handleChange = (e) => {
 
         setFormData({
@@ -64,7 +82,105 @@ export default function Signup() {
 
         });
 
+        // Clear old error while user is typing
+
+        if (error) {
+            setError("");
+        }
+
     };
+
+
+    // ==========================================
+    // Password Validation
+    // ==========================================
+
+    const password = formData.password;
+
+
+    const passwordRequirements = {
+
+        minLength: password.length >= 8,
+
+        lowercase: /[a-z]/.test(password),
+
+        uppercase: /[A-Z]/.test(password),
+
+        number: /\d/.test(password),
+
+        special: /[@$!%*?&]/.test(password)
+
+    };
+
+
+    const isPasswordStrong =
+
+        passwordRequirements.minLength &&
+
+        passwordRequirements.lowercase &&
+
+        passwordRequirements.uppercase &&
+
+        passwordRequirements.number &&
+
+        passwordRequirements.special;
+
+
+    const passwordsMatch =
+
+        formData.password === formData.confirmPassword;
+
+
+    // ==========================================
+    // Password Strength
+    // ==========================================
+
+    const getPasswordStrength = () => {
+
+        if (!password) {
+            return {
+                text: "",
+                width: "0%"
+            };
+        }
+
+        const score = Object.values(passwordRequirements)
+            .filter(Boolean)
+            .length;
+
+
+        if (score <= 2) {
+
+            return {
+                text: "Weak",
+                width: "40%"
+            };
+
+        }
+
+        if (score <= 4) {
+
+            return {
+                text: "Medium",
+                width: "70%"
+            };
+
+        }
+
+        return {
+            text: "Strong",
+            width: "100%"
+        };
+
+    };
+
+
+    const passwordStrength = getPasswordStrength();
+
+
+    // ==========================================
+    // Submit
+    // ==========================================
 
     const handleSubmit = async (e) => {
 
@@ -74,7 +190,23 @@ export default function Signup() {
 
         setMessage("");
 
-        if (formData.password !== formData.confirmPassword) {
+
+        // Password validation
+
+        if (!isPasswordStrong) {
+
+            setError(
+                "Please create a strong password that meets all the requirements."
+            );
+
+            return;
+
+        }
+
+
+        // Confirm password validation
+
+        if (!passwordsMatch) {
 
             setError("Passwords do not match.");
 
@@ -82,9 +214,11 @@ export default function Signup() {
 
         }
 
+
         try {
 
             setLoading(true);
+
 
             const response = await registerUser({
 
@@ -98,25 +232,37 @@ export default function Signup() {
 
             });
 
+
             setMessage(response.message);
+
+
+            // Store only username.
+            // Do NOT store/display password.
 
             setRegisteredUser({
 
-                username: formData.username,
-
-                password: formData.password
+                username: formData.username
 
             });
 
+
             setCountdown(20);
 
-        }
 
-        catch (err) {
+        } catch (err) {
+
+            console.error(err);
+
 
             if (err.response) {
 
-                setError(err.response.data.message);
+                setError(
+
+                    err.response.data?.message ||
+
+                    "Registration failed."
+
+                );
 
             } else {
 
@@ -124,9 +270,7 @@ export default function Signup() {
 
             }
 
-        }
-
-        finally {
+        } finally {
 
             setLoading(false);
 
@@ -134,27 +278,43 @@ export default function Signup() {
 
     };
 
+
+    // ==========================================
+    // UI
+    // ==========================================
+
     return (
 
         <div className="min-h-screen bg-orange-50 flex items-center justify-center p-6">
 
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+            <div className="bg-white shadow-xl rounded-3xl w-full max-w-md p-8">
 
-                <h1 className="text-3xl font-bold text-center text-orange-700">
+
+                {/* ==================================
+                    Heading
+                ================================== */}
+
+                <h1 className="text-3xl font-bold text-center text-orange-700 mb-2">
 
                     📖 Create Account
 
                 </h1>
 
-                <p className="text-center text-gray-500 mt-2 mb-8">
+
+                <p className="text-center text-gray-500 mb-8">
 
                     Join Ramcharitmanas Reading Journey
 
                 </p>
 
+
+                {/* ==================================
+                    Success Message
+                ================================== */}
+
                 {message && (
 
-                    <div className="bg-green-100 text-green-700 rounded-lg p-3 mb-4 text-center">
+                    <div className="bg-green-100 text-green-700 p-3 rounded-lg mb-4">
 
                         {message}
 
@@ -162,53 +322,52 @@ export default function Signup() {
 
                 )}
 
-                {error && (
 
-                    <div className="bg-red-100 text-red-700 rounded-lg p-3 mb-4 text-center">
+                {/* ==================================
+                    Registration Success
+                ================================== */}
 
-                        {error}
+                {registeredUser && (
 
-                    </div>
+                    <div className="bg-green-50 border border-green-300 rounded-xl p-5 mb-5">
 
-                )}
-
-                {registeredUser ? (
-
-                    <div className="bg-green-50 border border-green-300 rounded-2xl p-6">
 
                         <div className="text-center">
 
-                            <div className="text-6xl">
+                            <div className="text-6xl mb-4">
 
                                 ✅
 
                             </div>
 
-                            <h2 className="text-2xl font-bold text-green-700 mt-2">
+
+                            <h2 className="text-2xl font-bold text-green-700">
 
                                 Registration Successful
 
                             </h2>
 
-                            <p className="text-gray-600 mt-2">
-
-                                Your account has been created successfully.
-
-                            </p>
-
                         </div>
 
-                        <div className="mt-6 space-y-4">
 
-                            <div className="bg-white rounded-xl shadow p-4">
+                        <p className="mt-4">
 
-                                <p className="text-sm text-gray-500">
+                            Your account has been created successfully.
+
+                        </p>
+
+
+                        <div className="mt-4">
+
+                            <div className="bg-white rounded-lg p-3 shadow">
+
+                                <p className="text-gray-500 text-sm">
 
                                     Username
 
                                 </p>
 
-                                <p className="text-xl font-semibold text-orange-700">
+                                <p className="text-lg font-semibold text-orange-700">
 
                                     {registeredUser.username}
 
@@ -216,83 +375,43 @@ export default function Signup() {
 
                             </div>
 
-                            {/* <div className="bg-white rounded-xl shadow p-4">
-
-                                <p className="text-sm text-gray-500">
-
-                                    Password
-
-                                </p>
-
-                                <p className="text-xl font-semibold">
-
-                                    {registeredUser.password}
-
-                                </p>
-
-                            </div> */}
-
                         </div>
 
-                        <p className="text-sm text-gray-600 mt-5 text-center">
 
-                            Please remember your username and password for future login.
+                        <div className="mt-5">
 
-                        </p>
+                            <p className="text-orange-700 font-semibold text-center">
 
-                        <div className="w-full bg-gray-200 rounded-full h-3 mt-6">
+                                Redirecting to Home Page in
 
-                            <div
+                                <span className="text-2xl ml-2">
 
-                                className="bg-orange-500 h-3 rounded-full transition-all duration-1000"
+                                    {countdown}
 
-                                style={{
+                                </span>
 
-                                    width: `${(countdown / 20) * 100}%`
+                                seconds...
 
-                                }}
+                            </p>
 
-                            ></div>
-
-                        </div>
-
-                        <p className="text-center mt-4 text-orange-700 font-semibold">
-
-                            Redirecting automatically in
-
-                            <span className="text-3xl mx-2 font-bold">
-
-                                {countdown}
-
-                            </span>
-
-                            seconds
-
-                        </p>
-
-                        <div className="grid grid-cols-2 gap-4 mt-6">
-
-                            <button
-
-                                onClick={() => navigate("/admin-login")}
-
-                                className="bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold"
-
-                            >
-
-                                🔐 Login Now
-
-                            </button>
 
                             <button
 
                                 onClick={() => navigate("/")}
 
-                                className="bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-xl font-semibold"
+                                className="
+                                    mt-4
+                                    w-full
+                                    bg-orange-600
+                                    hover:bg-orange-700
+                                    text-white
+                                    py-2
+                                    rounded-lg
+                                "
 
                             >
 
-                                🏠 Home
+                                Go to Home Now
 
                             </button>
 
@@ -300,9 +419,37 @@ export default function Signup() {
 
                     </div>
 
-                ) : (
+                )}
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+
+                {/* ==================================
+                    Error
+                ================================== */}
+
+                {error && (
+
+                    <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
+
+                        {error}
+
+                    </div>
+
+                )}
+
+
+                {/* ==================================
+                    Signup Form
+                ================================== */}
+
+                {!registeredUser && (
+
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-5"
+                    >
+
+
+                        {/* Full Name */}
 
                         <input
 
@@ -322,6 +469,9 @@ export default function Signup() {
 
                         />
 
+
+                        {/* Username */}
+
                         <input
 
                             type="text"
@@ -339,6 +489,9 @@ export default function Signup() {
                             className="w-full border rounded-lg p-3"
 
                         />
+
+
+                        {/* Email */}
 
                         <input
 
@@ -358,57 +511,282 @@ export default function Signup() {
 
                         />
 
-                        <input
 
-                            type="password"
+                        {/* ==================================
+                            Password
+                        ================================== */}
 
-                            name="password"
+                        <div>
 
-                            placeholder="Password"
+                            <input
 
-                            value={formData.password}
+                                type="password"
 
-                            onChange={handleChange}
+                                name="password"
 
-                            required
+                                placeholder="Password"
 
-                            className="w-full border rounded-lg p-3"
+                                value={formData.password}
 
-                        />
+                                onChange={handleChange}
 
-                        <input
+                                required
 
-                            type="password"
+                                className="w-full border rounded-lg p-3"
 
-                            name="confirmPassword"
+                            />
 
-                            placeholder="Confirm Password"
 
-                            value={formData.confirmPassword}
+                            {/* Password Strength */}
 
-                            onChange={handleChange}
+                            {password && (
 
-                            required
+                                <div className="mt-2">
 
-                            className="w-full border rounded-lg p-3"
+                                    <div className="flex justify-between text-sm">
 
-                        />
+                                        <span className="text-gray-500">
+
+                                            Password Strength
+
+                                        </span>
+
+                                        <span
+                                            className={
+                                                passwordStrength.text === "Strong"
+
+                                                    ? "text-green-600 font-semibold"
+
+                                                    : passwordStrength.text === "Medium"
+
+                                                    ? "text-yellow-600 font-semibold"
+
+                                                    : "text-red-600 font-semibold"
+                                            }
+                                        >
+
+                                            {passwordStrength.text}
+
+                                        </span>
+
+                                    </div>
+
+
+                                    <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+
+                                        <div
+
+                                            className={
+                                                passwordStrength.text === "Strong"
+
+                                                    ? "bg-green-500 h-2 rounded-full"
+
+                                                    : passwordStrength.text === "Medium"
+
+                                                    ? "bg-yellow-500 h-2 rounded-full"
+
+                                                    : "bg-red-500 h-2 rounded-full"
+                                            }
+
+                                            style={{
+                                                width: passwordStrength.width
+                                            }}
+
+                                        ></div>
+
+                                    </div>
+
+                                </div>
+
+                            )}
+
+
+                            {/* Password Requirements */}
+
+                            <div className="mt-3 text-sm space-y-1">
+
+                                <p
+                                    className={
+                                        passwordRequirements.minLength
+                                            ? "text-green-600"
+                                            : "text-gray-500"
+                                    }
+                                >
+
+                                    {passwordRequirements.minLength ? "✓" : "○"}
+
+                                    {" "}At least 8 characters
+
+                                </p>
+
+
+                                <p
+                                    className={
+                                        passwordRequirements.uppercase
+                                            ? "text-green-600"
+                                            : "text-gray-500"
+                                    }
+                                >
+
+                                    {passwordRequirements.uppercase ? "✓" : "○"}
+
+                                    {" "}One uppercase letter
+
+                                </p>
+
+
+                                <p
+                                    className={
+                                        passwordRequirements.lowercase
+                                            ? "text-green-600"
+                                            : "text-gray-500"
+                                    }
+                                >
+
+                                    {passwordRequirements.lowercase ? "✓" : "○"}
+
+                                    {" "}One lowercase letter
+
+                                </p>
+
+
+                                <p
+                                    className={
+                                        passwordRequirements.number
+                                            ? "text-green-600"
+                                            : "text-gray-500"
+                                    }
+                                >
+
+                                    {passwordRequirements.number ? "✓" : "○"}
+
+                                    {" "}One number
+
+                                </p>
+
+
+                                <p
+                                    className={
+                                        passwordRequirements.special
+                                            ? "text-green-600"
+                                            : "text-gray-500"
+                                    }
+                                >
+
+                                    {passwordRequirements.special ? "✓" : "○"}
+
+                                    {" "}One special character (@$!%*?&)
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* Confirm Password */}
+
+                        <div>
+
+                            <input
+
+                                type="password"
+
+                                name="confirmPassword"
+
+                                placeholder="Confirm Password"
+
+                                value={formData.confirmPassword}
+
+                                onChange={handleChange}
+
+                                required
+
+                                className="w-full border rounded-lg p-3"
+
+                            />
+
+
+                            {formData.confirmPassword && (
+
+                                <p
+                                    className={
+                                        passwordsMatch
+                                            ? "text-green-600 text-sm mt-1"
+                                            : "text-red-600 text-sm mt-1"
+                                    }
+                                >
+
+                                    {passwordsMatch
+
+                                        ? "✓ Passwords match"
+
+                                        : "✗ Passwords do not match"
+
+                                    }
+
+                                </p>
+
+                            )}
+
+                        </div>
+
+
+                        {/* Submit */}
 
                         <button
 
-                            disabled={loading}
+                            type="submit"
 
-                            className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-lg font-semibold"
+                            disabled={
+
+                                loading ||
+
+                                !isPasswordStrong ||
+
+                                !passwordsMatch
+
+                            }
+
+                            className={`
+                                w-full
+                                py-3
+                                rounded-lg
+                                font-semibold
+                                text-white
+                                transition
+                                ${
+                                    loading ||
+                                    !isPasswordStrong ||
+                                    !passwordsMatch
+
+                                        ? "bg-gray-400 cursor-not-allowed"
+
+                                        : "bg-orange-600 hover:bg-orange-700"
+                                }
+                            `}
 
                         >
 
-                            {loading ? "Creating Account..." : "Create Account"}
+                            {loading
+
+                                ? "Creating Account..."
+
+                                : "Create Account"
+
+                            }
 
                         </button>
+
 
                     </form>
 
                 )}
+
+
+                {/* ==================================
+                    Login Link
+                ================================== */}
 
                 {!registeredUser && (
 
@@ -418,7 +796,7 @@ export default function Signup() {
 
                         <Link
 
-                            to="/admin-login"
+                            to="/login"
 
                             className="text-orange-700 font-semibold ml-2"
 

@@ -1,4 +1,8 @@
-import { useParams } from "react-router-dom";
+import {
+  useParams,
+  useNavigate
+} from "react-router-dom";
+
 import { useState, useEffect } from "react";
 
 import {
@@ -30,21 +34,60 @@ export default function VerseCard({
   showAdminActions = false
 }) {
 
+  const navigate = useNavigate();
+
 const { name } = useParams();
 
 const kand = kandKey || name;
 const [bookmarked, setBookmarked] = useState(false);
 
+// useEffect(() => {
+
+//   async function loadBookmarkStatus() {
+
+//     const status = await isBookmarked(
+//       kand,
+//       id
+//     );
+
+//     setBookmarked(status);
+
+//   }
+
+//   loadBookmarkStatus();
+
+// }, [kand, id]);
+
+
 useEffect(() => {
+
+  const token = localStorage.getItem("token");
+
+  // Don't call protected bookmark API
+  // when user is not logged in.
+  if (!token) {
+    return;
+  }
 
   async function loadBookmarkStatus() {
 
-    const status = await isBookmarked(
-      kand,
-      id
-    );
+    try {
 
-    setBookmarked(status);
+      const status = await isBookmarked(
+        kand,
+        id
+      );
+
+      setBookmarked(status);
+
+    } catch (error) {
+
+      console.error(
+        "Error checking bookmark status:",
+        error
+      );
+
+    }
 
   }
 
@@ -55,23 +98,60 @@ useEffect(() => {
 
   const [showTransliteration, setShowTransliteration] = useState(false);
 
-  const handleBookmark = async () => {
+//   const handleBookmark = async () => {
 
-  await toggleBookmark(
-    kand,
-    id
-  );
+//   await toggleBookmark(
+//     kand,
+//     id
+//   );
 
-  const status =
-    await isBookmarked(
+//   const status =
+//     await isBookmarked(
+//       kand,
+//       id
+//     );
+
+//   setBookmarked(status);
+
+// };
+
+const handleBookmark = async () => {
+
+  const token = localStorage.getItem("token");
+
+  // User is not logged in
+  if (!token) {
+
+    navigate("/admin-login");
+
+    return;
+  }
+
+  try {
+
+    await toggleBookmark(
       kand,
       id
     );
 
-  setBookmarked(status);
+    const status =
+      await isBookmarked(
+        kand,
+        id
+      );
+
+    setBookmarked(status);
+
+  } catch (error) {
+
+    console.error(
+      "Error updating bookmark:",
+      error
+    );
+
+  }
 
 };
-
 
   const lines = Array.isArray(text) ? text : [text];
 

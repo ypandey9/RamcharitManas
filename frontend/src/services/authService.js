@@ -1,4 +1,3 @@
-import axios from "axios";
 import api from "./api";
 
 const API_BASE_URL = "/api/auth";
@@ -18,7 +17,7 @@ export const loginAdmin=async(username,password)=>{
 export const registerUser = async (user) => {
 
     const response = await api.post(
-        "/api/auth/register",
+        `${API_BASE_URL}/register`,
         user
     );
 

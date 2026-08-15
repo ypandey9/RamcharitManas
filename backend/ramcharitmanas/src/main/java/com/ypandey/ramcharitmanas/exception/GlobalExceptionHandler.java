@@ -5,46 +5,100 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(
-        UsernameAlreadyExistsException.class)
+    // ==========================================
+    // Validation Errors
+    // ==========================================
 
-public ResponseEntity<?> usernameExists(
-        UsernameAlreadyExistsException ex){
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationException(
+            MethodArgumentNotValidException ex) {
 
-    Map<String,Object> response=new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
 
-    response.put("success",false);
+        ex.getBindingResult()
+                .getFieldErrors()
+                .forEach(error -> {
 
-    response.put("message",ex.getMessage());
+                    errors.put(
+                            error.getField(),
+                            error.getDefaultMessage()
+                    );
 
-    return ResponseEntity
-            .status(HttpStatus.CONFLICT)
-            .body(response);
+                });
 
-}
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errors);
+    }
 
-@ExceptionHandler(
-        EmailAlreadyExistsException.class)
 
-public ResponseEntity<?> emailExists(
-        EmailAlreadyExistsException ex){
+    // ==========================================
+    // Username Already Exists
+    // ==========================================
 
-    Map<String,Object> response=new HashMap<>();
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleUsernameAlreadyExists(
+            UsernameAlreadyExistsException ex) {
 
-    response.put("success",false);
+        Map<String, String> response = new HashMap<>();
 
-    response.put("message",ex.getMessage());
+        response.put(
+                "message",
+                ex.getMessage()
+        );
 
-    return ResponseEntity
-            .status(HttpStatus.CONFLICT)
-            .body(response);
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
 
-}
+
+    // ==========================================
+    // Email Already Exists
+    // ==========================================
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleEmailAlreadyExists(
+            EmailAlreadyExistsException ex) {
+
+        Map<String, String> response = new HashMap<>();
+
+        response.put(
+                "message",
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
+
+    // ==========================================
+    // Generic Exception
+    // ==========================================
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGenericException(
+            Exception ex) {
+
+        Map<String, String> response = new HashMap<>();
+
+        response.put(
+                "message",
+                "Something went wrong. Please try again."
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
 
 }

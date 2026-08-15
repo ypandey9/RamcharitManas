@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
@@ -7,7 +7,6 @@ import VerseCard from "../components/VerseCard";
 import kandNames from "../data/kandNames";
 
 import {
-  getAllVerses,
   deleteVerse,
   getPagedVerses,
   getDashbaseStats
@@ -23,14 +22,7 @@ export default function AdminVerseManagement() {
   const [totalPages, setTotalPages] = useState(0);
   const [stats, setStats] = useState(null);
 
-
-  const navigate = useNavigate();
-
-useEffect(() => {
-
-  loadVerses();
-
-}, [page]);
+const navigate = useNavigate();
 
 useEffect(() => {
 
@@ -41,7 +33,7 @@ useEffect(() => {
       const data =
         await getDashbaseStats();
 
-        console.log("stats data : ", data );
+        // console.log("stats data : ", data );
 
       setStats(data);
 
@@ -57,28 +49,22 @@ useEffect(() => {
 }, []);
 
 
-const loadVerses = async () => {
+const loadVerses = useCallback(async () => {
 
   try {
 
     setLoading(true);
 
-const data =
-  await getPagedVerses(
-    page,
-    5
-  );
+    const data = await getPagedVerses(
+      page,
+      5
+    );
 
-setVerses(
-  data.content
-);
+    setVerses(data.content);
 
-setTotalPages(
-  data.totalPages
-);
+    setTotalPages(data.totalPages);
 
-
-  } catch(error) {
+  } catch (error) {
 
     console.error(error);
 
@@ -86,7 +72,16 @@ setTotalPages(
 
     setLoading(false);
   }
-};
+
+}, [page]);
+
+
+useEffect(() => {
+
+  loadVerses();
+
+}, [loadVerses]);
+
 
 
   // Delete Handler
