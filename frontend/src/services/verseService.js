@@ -120,3 +120,24 @@ export const getVerseNavigation=async(id)=>{
   );
   return response.data;
 };
+
+
+// PAGINATION - VERSES BY KAND
+export const getPagedVersesByKand = async (
+  kand,
+  page = 0,
+  size = 5
+) => {
+
+  const response =
+    await api.get(
+      `/api/verses/kand/${kand}`,
+      {
+        params: {
+          page,
+          size
+        }
+      }
+    );
+  return response.data;
+};

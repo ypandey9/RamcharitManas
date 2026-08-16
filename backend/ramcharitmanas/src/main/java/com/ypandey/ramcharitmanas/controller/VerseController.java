@@ -117,6 +117,27 @@ public Page<Verse> getPagedVerses(
     );
 }
 
+
+@GetMapping("/kand/{kand}")
+public Page<Verse> getVersesByKand(
+
+        @PathVariable String kand,
+
+        @RequestParam(defaultValue = "0")
+        int page,
+
+        @RequestParam(defaultValue = "5")
+        int size
+
+) {
+
+    return verseService.getVersesByKand(
+            kand,
+            page,
+            size
+    );
+}
+
 @GetMapping("/stats")
 public DashboardStats getStats() {
 

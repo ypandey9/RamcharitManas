@@ -5,8 +5,6 @@ import Navbar from "../components/Navbar";
 import VerseCard from "../components/VerseCard";
 import { getReadingPage } from "../services/readingPageService";
 
-import { getVerseNavigation } from "../services/verseService";
-
 
 export default function ReadingPage() {
 
@@ -18,8 +16,6 @@ export default function ReadingPage() {
 
     const [readingPage, setReadingPage] = useState(null);
 
-    const [navigation, setNavigation] = useState({ previousId: null, nextId: null });
-
     useEffect(() => {
 
         async function loadVerse() {
@@ -30,11 +26,6 @@ const page =
     await getReadingPage(id);
 
 setReadingPage(page);
-
-
-                const nav=
-    await getVerseNavigation(id);
-    setNavigation(nav);
                 
             } catch (error) {
 
@@ -71,6 +62,8 @@ setReadingPage(page);
                 {readingPage.verses.map((verse)=>(
 
                 <VerseCard
+
+                    key={verse.id}
 
                     id={verse.id}
 

@@ -11,13 +11,13 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import java.util.ArrayList;
+import java.util.Collections;
 
 @Service
 
@@ -67,71 +67,23 @@ private static final int PAGE_SIZE = 5;
         return true;
     }
 
-    //search
-    public Page<Verse> searchVerses(
+    // SEARCH
+public Page<Verse> searchVerses(
         String query,
         int page,
         int size
 ) {
 
-    String search = query.toLowerCase();
-
-    List<Verse> filteredVerses =
-            verseRepository.findAll()
-                    .stream()
-                    .filter(verse -> {
-
-                        String text =
-                                verse.getText() == null
-                                        ? ""
-                                        : String.join(" ", verse.getText());
-
-                        String transliteration =
-                                verse.getTransliteration() == null
-                                        ? ""
-                                        : String.join(" ", verse.getTransliteration());
-
-                        String arth =
-                                verse.getArth() == null
-                                        ? ""
-                                        : verse.getArth();
-
-                        String english =
-                                verse.getEnglish() == null
-                                        ? ""
-                                        : verse.getEnglish();
-
-                        String combined =
-                                (
-                                        text + " "
-                                        + transliteration + " "
-                                        + arth + " "
-                                        + english
-                                ).toLowerCase();
-
-                        return combined.contains(search);
-
-                    })
-                    .toList();
-
-    int start =
-            Math.min(page * size,
-                    filteredVerses.size());
-
-    int end =
-            Math.min(start + size,
-                    filteredVerses.size());
-
-    List<Verse> pageContent =
-            filteredVerses.subList(
-                    start,
-                    end
+    Pageable pageable =
+            PageRequest.of(
+                    page,
+                    size,
+                    Sort.by("id")
             );
 
-    return new PageImpl<>(
-            pageContent,
-            PageRequest.of(page, size),
-            filteredVerses.size()
+    return verseRepository.searchVerses(
+            query,
+            pageable
     );
 }
 
@@ -198,107 +150,133 @@ public VerseNavigationResponse getNavigation(Long id) {
         }
         
 
-public ReadingPageResponse getReadingPage(Long verseId) {
+public ReadingPageResponse getReadingPage(
+        Long verseId
+) {
 
-    List<Verse> allVerses = verseRepository.findAll();
+    // ==========================================
+    // Verify that the requested verse exists
+    // ==========================================
 
-    allVerses.sort(
-            Comparator.comparing(Verse::getId)
-    );
+    Verse currentVerse =
+            verseRepository
+                    .findById(verseId)
+                    .orElseThrow(
+                            () -> new RuntimeException(
+                                    "Verse not found: " + verseId
+                            )
+                    );
 
-    int currentIndex = -1;
 
-    for (int i = 0; i < allVerses.size(); i++) {
+    // ==========================================
+    // Current page + next page check
+    // ==========================================
 
-        if (allVerses.get(i).getId().equals(verseId)) {
+    List<Verse> currentAndNext =
+            verseRepository
+                    .findTop6ByIdGreaterThanEqualOrderByIdAsc(
+                            currentVerse.getId()
+                    );
 
-            currentIndex = i;
-            break;
 
-        }
-
-    }
-
-    if (currentIndex == -1) {
-
-        throw new RuntimeException("Verse not found");
-
-    }
-
-    int startIndex = currentIndex;
-
-    int endIndex = Math.min(
-            startIndex + PAGE_SIZE,
-            allVerses.size()
-    );
+    // ==========================================
+    // Current 5 verses
+    // ==========================================
 
     List<Verse> verses =
-            allVerses.subList(
-                    startIndex,
-                    endIndex
-            );
+            currentAndNext
+                    .stream()
+                    .limit(PAGE_SIZE)
+                    .toList();
+
 
     ReadingPageResponse response =
             new ReadingPageResponse();
 
     response.setVerses(verses);
 
-    // Previous
 
-// Previous Page
+    // ==========================================
+    // Previous Page
+    // ==========================================
 
-if (startIndex - PAGE_SIZE >= 0) {
+    List<Verse> previousVerses =
+            verseRepository
+                    .findTop5ByIdLessThanOrderByIdDesc(
+                            currentVerse.getId()
+                    );
 
-    response.setHasPrevious(true);
+    if (!previousVerses.isEmpty()) {
 
-    response.setPreviousStartVerseId(
+        previousVerses =
+                new ArrayList<>(
+                        previousVerses
+                );
 
-            allVerses
-                    .get(startIndex - PAGE_SIZE)
-                    .getId()
+        Collections.reverse(
+                previousVerses
+        );
 
-    );
+        response.setHasPrevious(true);
 
-} else {
+        response.setPreviousStartVerseId(
+                previousVerses
+                        .get(0)
+                        .getId()
+        );
 
-    response.setHasPrevious(false);
+    } else {
 
-}
+        response.setHasPrevious(false);
 
-// Next Page
-
-if (endIndex < allVerses.size()) {
-
-    response.setHasNext(true);
-
-    response.setNextStartVerseId(
-
-            allVerses
-                    .get(endIndex)
-                    .getId()
-
-    );
-
-} else {
-
-    response.setHasNext(false);
-
-}
+        response.setPreviousStartVerseId(null);
+    }
 
 
-System.out.println("Total Verses : " + allVerses.size());
+    // ==========================================
+    // Next Page
+    // ==========================================
 
-System.out.println("Start Index : " + startIndex);
+    if (currentAndNext.size() > PAGE_SIZE) {
 
-System.out.println("End Index : " + endIndex);
+        response.setHasNext(true);
 
-System.out.println(
-        allVerses.stream()
-                .map(Verse::getId)
-                .toList()
-);
+        response.setNextStartVerseId(
+                currentAndNext
+                        .get(PAGE_SIZE)
+                        .getId()
+        );
+
+    } else {
+
+        response.setHasNext(false);
+
+        response.setNextStartVerseId(null);
+    }
+
 
     return response;
+}
+
+
+
+public Page<Verse> getVersesByKand(
+        String kand,
+        int page,
+        int size
+) {
+
+    Pageable pageable =
+            PageRequest.of(
+                    page,
+                    size,
+                    Sort.by("id")
+            );
+
+    return verseRepository.findByKand(
+            kand,
+            pageable
+    );
 }
         
 
