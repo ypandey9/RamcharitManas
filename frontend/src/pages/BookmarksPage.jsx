@@ -2,204 +2,212 @@ import Navbar from "../components/Navbar";
 import VerseCard from "../components/VerseCard";
 
 import kandNames from "../data/kandNames";
-import { getBookmarks } from "../services/bookmarkService";
 
-import { getAllVerses } from "../services/verseService";
+import {
+    getBookmarkedVerses
+} from "../services/bookmarkService";
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 
 export default function BookmarksPage() {
 
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  const [savedVerses, setSavedVerses] = useState([]);
+    const isLoggedIn =
+        !!localStorage.getItem("token");
 
-  const [isLoggedIn] = useState(
-    !!localStorage.getItem("token")
-  );
+    const [savedVerses, setSavedVerses] =
+        useState([]);
 
+    const [loading, setLoading] =
+        useState(false);
 
-  // ==========================================
-  // Load Bookmarks
-  // ==========================================
 
-  useEffect(() => {
+    // ==========================================
+    // Load Bookmarked Verses
+    // ==========================================
 
-    if (!isLoggedIn) {
-      return;
-    }
+    useEffect(() => {
 
-    const loadBookmarks = async () => {
+        if (!isLoggedIn) {
+            return;
+        }
 
-      try {
+        const loadBookmarks = async () => {
 
-        const bookmarks =
-          await getBookmarks();
+            try {
 
-        const allVerses =
-          await getAllVerses();
+                setLoading(true);
 
+                const verses =
+                    await getBookmarkedVerses();
 
-        const bookmarkedVerses =
-          allVerses.filter(
-            verse =>
-              bookmarks.some(
-                b => b.verseId === verse.id
-              )
-          );
+                setSavedVerses(verses);
 
+            } catch (error) {
 
-        setSavedVerses(
-          bookmarkedVerses
-        );
+                console.error(
+                    "Error loading bookmarked verses:",
+                    error
+                );
 
+            } finally {
 
-      } catch (error) {
+                setLoading(false);
 
-        console.error(
-          "Error loading bookmarks:",
-          error
-        );
+            }
 
-      }
+        };
 
-    };
+        loadBookmarks();
 
-    loadBookmarks();
+    }, [isLoggedIn]);
 
-  }, [isLoggedIn]);
 
+    return (
 
-  return (
+        <>
 
-    <>
+            <Navbar />
 
-      <Navbar />
+            <div className="p-6">
 
+                <h2 className="
+                    text-2xl
+                    font-bold
+                    text-center
+                    mb-6
+                    text-secondary
+                ">
+                    📚 Saved Bookmarks
+                </h2>
 
-      <div className="p-6">
 
+                {/* ==================================
+                    Not Logged In
+                ================================== */}
 
-        <h2 className="
-          text-2xl
-          font-bold
-          text-center
-          mb-6
-          text-secondary
-        ">
-          📚 Saved Bookmarks
-        </h2>
+                {!isLoggedIn ? (
 
+                    <div className="text-center mt-10">
 
-        {/* ==================================
-            Not Logged In
-        ================================== */}
+                        <p className="
+                            text-gray-500
+                            mb-4
+                        ">
 
-        {!isLoggedIn ? (
+                            Please login to view
+                            your bookmarks.
 
-          <div className="text-center mt-10">
+                        </p>
 
-            <p className="text-gray-500 mb-4">
+                        <button
+                            onClick={() =>
+                                navigate("/admin-login")
+                            }
+                            className="
+                                bg-orange-600
+                                hover:bg-orange-700
+                                text-white
+                                px-6
+                                py-2
+                                rounded-lg
+                                font-semibold
+                            "
+                        >
+                            Login
+                        </button>
 
-              Please login to view your bookmarks.
+                    </div>
 
-            </p>
 
+                ) : loading ? (
 
-            <button
-              onClick={() =>
-                navigate("/admin-login")
-              }
-              className="
-                bg-orange-600
-                hover:bg-orange-700
-                text-white
-                px-6
-                py-2
-                rounded-lg
-                font-semibold
-              "
-            >
+                    /* ==================================
+                       Loading
+                    ================================== */
 
-              Login
+                    <p className="
+                        text-center
+                        text-gray-500
+                        mt-10
+                    ">
+                        Loading bookmarks...
+                    </p>
 
-            </button>
 
-          </div>
+                ) : savedVerses.length === 0 ? (
 
+                    /* ==================================
+                       No Bookmarks
+                    ================================== */
 
-        ) : savedVerses.length === 0 ? (
+                    <p className="
+                        text-center
+                        text-gray-500
+                    ">
+                        No bookmarks added yet
+                    </p>
 
 
-          /* ==================================
-             Logged In - No Bookmarks
-          ================================== */
+                ) : (
 
-          <p className="text-center text-gray-500">
+                    /* ==================================
+                       Bookmarked Verses
+                    ================================== */
 
-            No bookmarks added yet
+                    savedVerses.map((item) => (
 
-          </p>
+                        <div
+                            key={item.id}
+                            className="mb-8"
+                        >
 
+                            <h3 className="
+                                text-lg
+                                font-semibold
+                                mb-3
+                                text-orange-600
+                            ">
 
-        ) : (
+                                {kandNames[item.kand] ||
+                                    item.kand}
 
+                            </h3>
 
-          /* ==================================
-             Logged In - Bookmarks
-          ================================== */
 
-          savedVerses.map((item, index) => (
+                            <VerseCard
 
-            <div
-              key={index}
-              className="mb-8"
-            >
+                                id={item.id}
 
-              <h3 className="
-                text-lg
-                font-semibold
-                mb-3
-                text-orange-600
-              ">
+                                type={item.type}
 
-                {kandNames[item.kand] ||
-                  item.kand}
+                                text={item.text}
 
-              </h3>
+                                arth={item.arth}
 
+                                english={item.english}
 
-              <VerseCard
+                                transliteration={
+                                    item.transliteration
+                                }
 
-                id={item.id}
+                                kandKey={item.kand}
 
-                type={item.type}
+                            />
 
-                text={item.text}
+                        </div>
 
-                arth={item.arth}
+                    ))
 
-                english={item.english}
-
-                transliteration={
-                  item.transliteration
-                }
-
-                kandKey={item.kand}
-
-              />
+                )}
 
             </div>
 
-          ))
+        </>
 
-        )}
-
-      </div>
-
-    </>
-
-  );
+    );
 
 }

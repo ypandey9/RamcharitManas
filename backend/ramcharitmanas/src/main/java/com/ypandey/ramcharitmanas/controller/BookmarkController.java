@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ypandey.ramcharitmanas.dto.BookmarkResponse;
 import com.ypandey.ramcharitmanas.model.Bookmark;
 import com.ypandey.ramcharitmanas.model.User;
+import com.ypandey.ramcharitmanas.model.Verse;
 import com.ypandey.ramcharitmanas.repository.UserRepository;
 import com.ypandey.ramcharitmanas.service.BookmarkService;
 
@@ -24,75 +25,152 @@ public class BookmarkController {
     private final BookmarkService bookmarkService;
     private final UserRepository userRepository;
 
-    public BookmarkController(BookmarkService bookmarkService, UserRepository userRepository) {
-        this.bookmarkService = bookmarkService;
-        this.userRepository = userRepository;
+    public BookmarkController(
+            BookmarkService bookmarkService,
+            UserRepository userRepository) {
+
+        this.bookmarkService =
+                bookmarkService;
+
+        this.userRepository =
+                userRepository;
     }
 
-//Save bookmarek
 
-@PostMapping("/{verseId}")
-public BookmarkResponse saveBookmark(
+    // ==========================================
+    // Save Bookmark
+    // ==========================================
 
-        @PathVariable Long verseId,
-        Authentication authentication) {
+    @PostMapping("/{verseId}")
+    public BookmarkResponse saveBookmark(
 
-    // Logged-in username
-    String username = authentication.getName();
+            @PathVariable Long verseId,
+            Authentication authentication) {
 
-    // Fetch user from database
-    User user = userRepository
-            .findByUsername(username)
-            .orElseThrow();
+        String username =
+                authentication.getName();
 
-    // Save bookmark
-    Bookmark bookmark =
-            bookmarkService.saveBookmark(
-                    user,
-                    verseId);
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow();
 
-    // Convert Entity -> DTO
-    BookmarkResponse response =
-            new BookmarkResponse();
+        Bookmark bookmark =
+                bookmarkService.saveBookmark(
+                        user,
+                        verseId
+                );
 
-    response.setId(
-            bookmark.getId());
+        BookmarkResponse response =
+                new BookmarkResponse();
 
-    response.setVerseId(
-            bookmark.getVerseId());
+        response.setId(
+                bookmark.getId()
+        );
 
-    response.setCreatedAt(
-            bookmark.getCreatedAt());
+        response.setVerseId(
+                bookmark.getVerseId()
+        );
 
-    return response;
-}
+        response.setCreatedAt(
+                bookmark.getCreatedAt()
+        );
 
-@GetMapping
-public List<BookmarkResponse> getBookmarks(Authentication authentication) {
+        return response;
+    }
 
-    String username=authentication.getName();
-    User user=userRepository.findByUsername(username).orElseThrow();
-    List<Bookmark> bookmarks = bookmarkService.getBookmarks(user);
 
-    // Convert List of Entities -> List of DTOs
-    return bookmarks.stream()
-            .map(bookmark -> {
-                BookmarkResponse response = new BookmarkResponse();
-                response.setId(bookmark.getId());
-                response.setVerseId(bookmark.getVerseId());
-                response.setCreatedAt(bookmark.getCreatedAt());
-                return response;
-            })
-            .collect(Collectors.toList());
-}
+    // ==========================================
+    // Get User Bookmarks
+    // ==========================================
 
-//Remove bookmark
-@DeleteMapping("/{verseId}") 
-public void removeBookmark(@PathVariable Long verseId,Authentication authentication) {
-        System.out.println("DELETE bookmark endpoint called");
-    String username=authentication.getName();
-    User user=userRepository.findByUsername(username).orElseThrow();
-    bookmarkService.removeBookmark(user,verseId);
-}
-    
+    @GetMapping
+    public List<BookmarkResponse> getBookmarks(
+            Authentication authentication) {
+
+        String username =
+                authentication.getName();
+
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow();
+
+        List<Bookmark> bookmarks =
+                bookmarkService
+                        .getBookmarks(user);
+
+        return bookmarks.stream()
+                .map(bookmark -> {
+
+                    BookmarkResponse response =
+                            new BookmarkResponse();
+
+                    response.setId(
+                            bookmark.getId()
+                    );
+
+                    response.setVerseId(
+                            bookmark.getVerseId()
+                    );
+
+                    response.setCreatedAt(
+                            bookmark.getCreatedAt()
+                    );
+
+                    return response;
+
+                })
+                .collect(Collectors.toList());
+    }
+
+
+    // ==========================================
+    // Get Bookmarked Verses
+    // ==========================================
+
+    @GetMapping("/verses")
+    public List<Verse> getBookmarkedVerses(
+            Authentication authentication) {
+
+        String username =
+                authentication.getName();
+
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow();
+
+        return bookmarkService
+                .getBookmarkedVerses(user);
+    }
+
+
+    // ==========================================
+    // Remove Bookmark
+    // ==========================================
+
+    @DeleteMapping("/{verseId}")
+    public void removeBookmark(
+            @PathVariable Long verseId,
+            Authentication authentication) {
+
+        System.out.println(
+                "DELETE bookmark endpoint called"
+        );
+
+        String username =
+                authentication.getName();
+
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow();
+
+        bookmarkService.removeBookmark(
+                user,
+                verseId
+        );
+    }
+
 }

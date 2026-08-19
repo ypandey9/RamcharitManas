@@ -41,23 +41,6 @@ const { name } = useParams();
 const kand = kandKey || name;
 const [bookmarked, setBookmarked] = useState(false);
 
-// useEffect(() => {
-
-//   async function loadBookmarkStatus() {
-
-//     const status = await isBookmarked(
-//       kand,
-//       id
-//     );
-
-//     setBookmarked(status);
-
-//   }
-
-//   loadBookmarkStatus();
-
-// }, [kand, id]);
-
 
 useEffect(() => {
 
@@ -98,22 +81,6 @@ useEffect(() => {
 
   const [showTransliteration, setShowTransliteration] = useState(false);
 
-//   const handleBookmark = async () => {
-
-//   await toggleBookmark(
-//     kand,
-//     id
-//   );
-
-//   const status =
-//     await isBookmarked(
-//       kand,
-//       id
-//     );
-
-//   setBookmarked(status);
-
-// };
 
 const handleBookmark = async () => {
 

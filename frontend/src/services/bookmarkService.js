@@ -29,3 +29,13 @@ export const removeBookmark = async (verseId) => {
 
     return response.data;
 };
+
+// Only bookmarked verses
+
+export const getBookmarkedVerses = async () => {
+
+    const response =
+        await api.get("/api/bookmarks/verses");
+
+    return response.data;
+};

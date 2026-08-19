@@ -14,13 +14,13 @@ export default function Home() {
 
 
 const kands = [
-  { name: "बाल काण्ड", key: "bal_kand" },
-  { name: "अयोध्या काण्ड", key: "ayodhya_kand" },
-  { name: "अरण्य काण्ड", key: "aranya_kand" },
-  { name: "किष्किंधा काण्ड", key: "kishkindha_kand" },
-  { name: "सुंदर काण्ड", key: "sundar_kand" },
-  { name: "लंका काण्ड", key: "lanka_kand" },
-  { name: "उत्तर काण्ड", key: "uttar_kand" },
+  { name: "बालकाण्ड", key: "bal_kand" },
+  { name: "अयोध्याकाण्ड", key: "ayodhya_kand" },
+  { name: "अरण्यकाण्ड", key: "aranya_kand" },
+  { name: "किष्किंधाकाण्ड", key: "kishkindha_kand" },
+  { name: "सुन्दरकाण्ड", key: "sundar_kand" },
+  { name: "लंकाकाण्ड", key: "lanka_kand" },
+  { name: "उत्तरकाण्ड", key: "uttar_kand" },
   { name: "श्रीमद्भगवद्गीता", key: "shree_mad_bhagvat_geeta" }
 ];
 
