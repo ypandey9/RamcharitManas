@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import Navbar from "../components/Navbar";
 import { addVerse } from "../services/verseService";
@@ -22,6 +22,9 @@ const typeOptions = [
 ];
 
 export default function AdminPage() {
+  
+const [isSaving, setIsSaving] = useState(false);
+const isSubmitting = useRef(false);
 
   const [formData, setFormData] = useState({
     kand: "bal_kand",
@@ -42,6 +45,13 @@ export default function AdminPage() {
   const handleSubmit = async (e) => {
 
   e.preventDefault();
+
+  if(isSubmitting.current) {
+    return;
+  }
+
+  isSubmitting.current=true;
+  setIsSaving(true);
 
   try {
 
@@ -86,6 +96,9 @@ export default function AdminPage() {
     console.error(error);
 
     alert("Failed to add verse");
+  } finally {
+    isSubmitting.current=false;
+    setIsSaving(false);
   }
 
   };
@@ -212,9 +225,21 @@ export default function AdminPage() {
 
             <button
               type="submit"
-              className="px-8 py-3 rounded-full bg-orange-500 text-white hover:bg-orange-600 transition"
+              disabled={isSaving}
+              className={`
+                px-8 
+                py-3 
+                rounded-full 
+                bg-orange-500 
+                text-white 
+                hover:bg-orange-600 
+                transition
+                ${
+                  isSaving ? "bg-gray-400 cursor-not-allowed" : "bg-orange-500 hover:bg-orange-600"
+                }
+                `}
             >
-              Save Verse
+              {isSaving ? "Saving..." : "Save Verse"}
             </button>
 
           </div>
