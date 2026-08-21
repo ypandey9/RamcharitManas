@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState , useRef } from "react";
 
 import { Link, useNavigate } from "react-router-dom";
 
@@ -9,7 +9,9 @@ import { loginAdmin } from "../services/authService";
 
 export default function AdminLogin() {
 
-  const navigate = useNavigate();
+const navigate = useNavigate();
+const [isLogging,setIsLogging] = useState(false);
+const isSubmitting = useRef(false);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -29,6 +31,13 @@ export default function AdminLogin() {
   const handleSubmit = async(e) => {
 
     e.preventDefault();
+
+    if(isSubmitting.current) {
+      return;
+    }
+
+    isSubmitting.current = true;
+    setIsLogging(true);
 
     try {
 
@@ -60,6 +69,9 @@ localStorage.setItem(
 
     setError("Invalid username or password");
 
+  } finally {
+    isSubmitting.current = false;
+    setIsLogging(false);
   }
    
   };
@@ -132,13 +144,18 @@ localStorage.setItem(
             {/* Submit */}
             <button
               type="submit"
-              className="
-                w-full py-3 rounded-full
+              disabled={isLogging}
+              className={`w-full py-3 rounded-full
                 bg-orange-500 text-white
                 hover:bg-orange-600 transition
-              "
+              ${
+                isLogging
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-orange-500 hover:bg-orange-600"
+              }
+              `}
             >
-              Login
+            {isLogging ? "Logging..." : "Login"}
             </button>
 
           </form>
