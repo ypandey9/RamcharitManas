@@ -28,18 +28,17 @@ const kands = [
     <>
       <Navbar />
   
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         
         <h2 className="text-center text-2xl font-bold text-secondary mb-6">
           काण्ड चयन करें
         </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {kands.map((k, i) => (
             <KandCard key={i} name={k.name} keyName={k.key} />
           ))}
         </div>
-
       </div>
     </>
   );

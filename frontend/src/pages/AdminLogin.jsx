@@ -35,7 +35,7 @@ const isSubmitting = useRef(false);
     if(isSubmitting.current) {
       return;
     }
-
+    setError("");
     isSubmitting.current = true;
     setIsLogging(true);
 

@@ -82,14 +82,13 @@ const isSubmitting = useRef(false);
     alert("Verse Added Successfully");
 
     // Reset
-    setFormData({
-      kand: "bal_kand",
-      type: "shlok",
-      text: "",
-      transliteration: "",
-      arth: "",
-      english: ""
-    });
+    setFormData(prev => ({
+  ...prev,
+  text: "",
+  transliteration: "",
+  arth: "",
+  english: ""
+}));
 
   } catch (error) {
 
