@@ -1,47 +1,144 @@
-//Token
-export const getToken=()=>{
+// ==========================================
+// Token
+// ==========================================
+
+export const getToken = () => {
+
     return localStorage.getItem("token");
+
 };
 
-//Usernmae
 
-export const getUsername=()=>{
+// ==========================================
+// Username
+// ==========================================
+
+export const getUsername = () => {
+
     return localStorage.getItem("username");
+
 };
 
-//role
-export const getRole=()=>{
+
+// ==========================================
+// Role
+// ==========================================
+
+export const getRole = () => {
+
     return localStorage.getItem("role");
+
 };
 
-//logged in
 
-export const isLoggedIn=()=>{
-    return !!getToken();
+// ==========================================
+// Check Token Expiration
+// ==========================================
+
+export const isTokenValid = () => {
+
+    const token = getToken();
+
+    if (!token) {
+        return false;
+    }
+
+    try {
+
+        const payload =
+            JSON.parse(
+                atob(token.split(".")[1])
+            );
+
+        const expiration =
+            payload.exp * 1000;
+
+        return expiration > Date.now();
+
+    } catch (error) {
+
+        console.error(
+            "Invalid JWT token:",
+            error
+        );
+
+        return false;
+
+    }
+
 };
 
-//IsAdmin
 
-export const isAdmin=()=>{
-    return getRole()==="ROLE_ADMIN";
+// ==========================================
+// Logged In
+// ==========================================
+
+export const isLoggedIn = () => {
+
+    const token = getToken();
+
+    if (!token) {
+        return false;
+    }
+
+    if (!isTokenValid()) {
+
+        logout();
+
+        return false;
+    }
+
+    return true;
+
 };
 
-//editor
 
-export const isEditor=()=>{
-    return getRole()==="ROLE_EDITOR";
+// ==========================================
+// Is Admin
+// ==========================================
+
+export const isAdmin = () => {
+
+    return isLoggedIn()
+        && getRole() === "ROLE_ADMIN";
+
 };
 
-//user
 
-export const isUser=()=>{
-    return getRole()==="ROLE_USER";
+// ==========================================
+// Is Editor
+// ==========================================
+
+export const isEditor = () => {
+
+    return isLoggedIn()
+        && getRole() === "ROLE_EDITOR";
+
 };
 
-//Logout
-export const logout=()=>{
+
+// ==========================================
+// Is User
+// ==========================================
+
+export const isUser = () => {
+
+    return isLoggedIn()
+        && getRole() === "ROLE_USER";
+
+};
+
+
+// ==========================================
+// Logout
+// ==========================================
+
+export const logout = () => {
 
     localStorage.removeItem("token");
+
     localStorage.removeItem("username");
+
     localStorage.removeItem("role");
+
 };
