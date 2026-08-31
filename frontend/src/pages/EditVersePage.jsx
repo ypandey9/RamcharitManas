@@ -12,6 +12,8 @@ import {
   updateVerse
 } from "../services/verseService";
 
+import kandNames from "../data/kandNames";
+
 
 const typeOptions = [
   "doha",
@@ -28,12 +30,17 @@ export default function EditVersePage() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
+    kand:"",
     type: "",
     text: "",
     transliteration: "",
     arth: "",
     english: ""
   });
+
+  // Extracting kandnames using keys
+  
+  const kandKeys=Object.keys(kandNames);
 
   // Load verse
   useEffect(() => {
@@ -46,6 +53,8 @@ export default function EditVersePage() {
         await getVerseById(id);
 
       setFormData({
+
+        kand:existing.kand,
 
         type: existing.type,
 
@@ -91,7 +100,7 @@ export default function EditVersePage() {
   const updatedVerse = {
 
     id: Number(id),
-
+    kand: formData.kand,
     type: formData.type,
 
     text: formData.text
@@ -144,6 +153,25 @@ export default function EditVersePage() {
 
           {/* Type */}
           <div className="mb-6">
+
+            <label className="block font-semibold mb-2">
+              Kand Name
+            </label>
+
+            <select
+              name="kand"
+              value={formData.kand}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3"
+            >
+
+              {kandKeys.map((kand) => (
+                <option key={kand} value={kand}>
+                  {kand}
+                </option>
+              ))}
+
+            </select>
 
             <label className="block font-semibold mb-2">
               Verse Type
