@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
 import VerseCard from "../components/VerseCard";
+import Pagination from "../components/Pagination";
 
 import kandNames from "../data/kandNames";
 import kandHeaders from "../data/kandHeaders";
@@ -12,9 +13,11 @@ import {
   getPagedVersesByKand
 } from "../services/verseService";
 
+
 export default function KandPage() {
 
   const { name } = useParams();
+
 
   // ==========================================
   // Verses
@@ -22,17 +25,24 @@ export default function KandPage() {
 
   const [verses, setVerses] = useState([]);
 
+
   // ==========================================
   // Pagination
   // ==========================================
 
+  // 0-based page
+  // 0 = Page 1
+  // 1 = Page 2
+  // etc.
+
   const [currentPage, setCurrentPage] =
-    useState(1);
+    useState(0);
 
   const [totalPages, setTotalPages] =
     useState(0);
 
   const itemsPerPage = 5;
+
 
   // ==========================================
   // Loading / Error
@@ -44,6 +54,7 @@ export default function KandPage() {
   const [error, setError] =
     useState("");
 
+
   // ==========================================
   // Kand Header
   // ==========================================
@@ -51,15 +62,17 @@ export default function KandPage() {
   const header =
     kandHeaders[name] || {};
 
+
   // ==========================================
   // Reset page when Kand changes
   // ==========================================
 
   useEffect(() => {
 
-    setCurrentPage(1);
+    setCurrentPage(0);
 
   }, [name]);
+
 
   // ==========================================
   // Load verses from backend
@@ -72,22 +85,26 @@ export default function KandPage() {
       try {
 
         setLoading(true);
+
         setError("");
 
         const data =
           await getPagedVersesByKand(
             name,
-            currentPage - 1,
+            currentPage,
             itemsPerPage
           );
+
 
         setVerses(
           data.content || []
         );
 
+
         setTotalPages(
           data.totalPages || 0
         );
+
 
       } catch (error) {
 
@@ -104,6 +121,7 @@ export default function KandPage() {
           "Unable to load verses. Please try again."
         );
 
+
       } finally {
 
         setLoading(false);
@@ -112,9 +130,11 @@ export default function KandPage() {
 
     };
 
+
     loadVerses();
 
   }, [name, currentPage]);
+
 
   // ==========================================
   // Scroll to top when page changes
@@ -129,6 +149,7 @@ export default function KandPage() {
 
   }, [currentPage]);
 
+
   // ==========================================
   // UI
   // ==========================================
@@ -137,12 +158,14 @@ export default function KandPage() {
     <>
       <Navbar />
 
+
       <div
         className="
           max-w-5xl mx-auto
           px-4 py-6
         "
       >
+
 
         {/* =====================================
             Kand Title
@@ -215,8 +238,6 @@ export default function KandPage() {
               py-16
             "
           >
-
-            {/* Spinner */}
 
             <div
               className="
@@ -331,156 +352,18 @@ export default function KandPage() {
                 PAGINATION
             ================================== */}
 
-            {totalPages > 1 && (
-
-              <div
-                className="
-                  flex
-                  flex-wrap
-                  justify-center
-                  items-center
-                  gap-2
-                  mt-10
-                "
-              >
-
-                {/* Previous */}
-
-                <button
-                  disabled={
-                    currentPage === 1
-                  }
-
-                  onClick={() =>
-                    setCurrentPage(
-                      prev =>
-                        Math.max(
-                          prev - 1,
-                          1
-                        )
-                    )
-                  }
-
-                  className={`
-                    px-4 py-2
-                    rounded-lg
-                    transition
-
-                    ${
-                      currentPage === 1
-                        ? `
-                          bg-gray-200
-                          text-gray-400
-                          cursor-not-allowed
-                        `
-                        : `
-                          bg-orange-200
-                          hover:bg-orange-300
-                        `
-                    }
-                  `}
-                >
-                  Prev
-                </button>
-
-
-                {/* Page Numbers */}
-
-                {[...Array(totalPages)].map(
-                  (_, index) => {
-
-                    const pageNumber =
-                      index + 1;
-
-                    return (
-
-                      <button
-                        key={pageNumber}
-
-                        onClick={() =>
-                          setCurrentPage(
-                            pageNumber
-                          )
-                        }
-
-                        className={`
-                          px-4 py-2
-                          rounded-lg
-                          transition
-
-                          ${
-                            currentPage ===
-                            pageNumber
-                              ? `
-                                bg-orange-500
-                                text-white
-                              `
-                              : `
-                                bg-gray-200
-                                hover:bg-gray-300
-                              `
-                          }
-                        `}
-                      >
-                        {pageNumber}
-                      </button>
-
-                    );
-
-                  }
-                )}
-
-
-                {/* Next */}
-
-                <button
-                  disabled={
-                    currentPage ===
-                    totalPages
-                  }
-
-                  onClick={() =>
-                    setCurrentPage(
-                      prev =>
-                        Math.min(
-                          prev + 1,
-                          totalPages
-                        )
-                    )
-                  }
-
-                  className={`
-                    px-4 py-2
-                    rounded-lg
-                    transition
-
-                    ${
-                      currentPage ===
-                      totalPages
-                        ? `
-                          bg-gray-200
-                          text-gray-400
-                          cursor-not-allowed
-                        `
-                        : `
-                          bg-orange-200
-                          hover:bg-orange-300
-                        `
-                    }
-                  `}
-                >
-                  Next
-                </button>
-
-              </div>
-
-            )}
+            <Pagination
+              page={currentPage}
+              totalPages={totalPages}
+              setPage={setCurrentPage}
+            />
 
           </>
 
         )}
 
       </div>
+
     </>
   );
 }

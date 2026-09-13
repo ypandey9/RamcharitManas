@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import Navbar from "../components/Navbar";
 import { addVerse } from "../services/verseService";
 
+
 const kandOptions = [
   "bal_kand",
   "ayodhya_kand",
@@ -13,6 +14,7 @@ const kandOptions = [
   "uttar_kand"
 ];
 
+
 const typeOptions = [
   "doha",
   "chaupai",
@@ -21,147 +23,330 @@ const typeOptions = [
   "chhand"
 ];
 
-export default function AdminPage() {
-  
-const [isSaving, setIsSaving] = useState(false);
-const isSubmitting = useRef(false);
 
-  const [formData, setFormData] = useState({
-    kand: "bal_kand",
-    type: "shlok",
-    text: "",
-    transliteration: "",
-    arth: "",
-    english: ""
-  });
+export default function AdminPage() {
+
+  const [isSaving, setIsSaving] =
+    useState(false);
+
+  const isSubmitting =
+    useRef(false);
+
+
+  const [formData, setFormData] =
+    useState({
+      kand: "bal_kand",
+      type: "shlok",
+      text: "",
+      transliteration: "",
+      arth: "",
+      english: ""
+    });
+
+
+  // ==========================================
+  // Handle Input Changes
+  // ==========================================
 
   const handleChange = (e) => {
+
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+
   };
+
+
+  // ==========================================
+  // Submit
+  // ==========================================
 
   const handleSubmit = async (e) => {
 
-  e.preventDefault();
+    e.preventDefault();
 
-  if(isSubmitting.current) {
-    return;
-  }
 
-  isSubmitting.current=true;
-  setIsSaving(true);
+    // ==========================================
+    // Validate Required Fields
+    // ==========================================
 
-  try {
+    if (
+      !formData.text.trim() ||
+      !formData.transliteration.trim() ||
+      !formData.arth.trim() ||
+      !formData.english.trim()
+    ) {
 
-    const newVerse = {
+      alert(
+        "Please fill all required fields."
+      );
 
-      id: Date.now(),
+      return;
+    }
 
-      kand: formData.kand,
 
-      type: formData.type,
+    // ==========================================
+    // Prevent Double Submission
+    // ==========================================
 
-      text: formData.text
-        .split("\n")
-        .filter(line => line.trim() !== ""),
+    if (isSubmitting.current) {
 
-      transliteration:
-        formData.transliteration
-          .split("\n")
-          .filter(line => line.trim() !== ""),
+      return;
 
-      arth: formData.arth,
+    }
 
-      english: formData.english
-    };
 
-    await addVerse(newVerse);
+    isSubmitting.current = true;
 
-    alert("Verse Added Successfully");
+    setIsSaving(true);
 
-    // Reset
-    setFormData(prev => ({
-  ...prev,
-  text: "",
-  transliteration: "",
-  arth: "",
-  english: ""
-}));
 
-  } catch (error) {
+    try {
 
-    console.error(error);
+      // ========================================
+      // Prepare Verse
+      // ========================================
 
-    alert("Failed to add verse");
-  } finally {
-    isSubmitting.current=false;
-    setIsSaving(false);
-  }
+      const newVerse = {
+
+        id: Date.now(),
+
+        kand: formData.kand,
+
+        type: formData.type,
+
+        text:
+          formData.text
+            .split("\n")
+            .filter(
+              line =>
+                line.trim() !== ""
+            ),
+
+        transliteration:
+          formData.transliteration
+            .split("\n")
+            .filter(
+              line =>
+                line.trim() !== ""
+            ),
+
+        arth: formData.arth,
+
+        english: formData.english
+
+      };
+
+
+      // ========================================
+      // Save Verse
+      // ========================================
+
+      await addVerse(newVerse);
+
+
+      alert(
+        "Verse Added Successfully"
+      );
+
+
+      // ========================================
+      // Reset Text Fields
+      // Keep Kand and Type
+      // ========================================
+
+      setFormData(prev => ({
+
+        ...prev,
+
+        text: "",
+
+        transliteration: "",
+
+        arth: "",
+
+        english: ""
+
+      }));
+
+
+    } catch (error) {
+
+      console.error(
+        "Failed to add verse:",
+        error
+      );
+
+      alert(
+        "Failed to add verse"
+      );
+
+
+    } finally {
+
+      isSubmitting.current = false;
+
+      setIsSaving(false);
+
+    }
 
   };
+
+
+  // ==========================================
+  // UI
+  // ==========================================
 
   return (
     <>
       <Navbar />
 
-      <div className="max-w-4xl mx-auto p-6">
 
-        <h2 className="text-3xl font-bold text-center mb-8 text-orange-700">
+      <div
+        className="
+          max-w-4xl
+          mx-auto
+          p-6
+        "
+      >
+
+        <h2
+          className="
+            text-3xl
+            font-bold
+            text-center
+            mb-8
+            text-orange-700
+          "
+        >
           Add Ramcharitmanas Verse
         </h2>
 
+
         <form
           onSubmit={handleSubmit}
-          className="bg-white p-8 rounded-2xl shadow-lg border border-orange-100"
+          className="
+            bg-white
+            p-8
+            rounded-2xl
+            shadow-lg
+            border
+            border-orange-100
+          "
         >
 
-          {/* Kand */}
+
+          {/* =====================================
+              Kand
+          ====================================== */}
+
           <div className="mb-6">
-            <label className="block font-semibold mb-2">
+
+            <label
+              className="
+                block
+                font-semibold
+                mb-2
+              "
+            >
               Select Kand
             </label>
+
 
             <select
               name="kand"
               value={formData.kand}
               onChange={handleChange}
-              className="w-full border rounded-lg p-3"
+              className="
+                w-full
+                border
+                rounded-lg
+                p-3
+              "
             >
-              {kandOptions.map((kand) => (
-                <option key={kand} value={kand}>
-                  {kand}
-                </option>
-              ))}
+
+              {kandOptions.map(
+                (kand) => (
+
+                  <option
+                    key={kand}
+                    value={kand}
+                  >
+                    {kand}
+                  </option>
+
+                )
+              )}
+
             </select>
+
           </div>
 
-          {/* Type */}
+
+          {/* =====================================
+              Type
+          ====================================== */}
+
           <div className="mb-6">
-            <label className="block font-semibold mb-2">
+
+            <label
+              className="
+                block
+                font-semibold
+                mb-2
+              "
+            >
               Verse Type
             </label>
+
 
             <select
               name="type"
               value={formData.type}
               onChange={handleChange}
-              className="w-full border rounded-lg p-3"
+              className="
+                w-full
+                border
+                rounded-lg
+                p-3
+              "
             >
-              {typeOptions.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
+
+              {typeOptions.map(
+                (type) => (
+
+                  <option
+                    key={type}
+                    value={type}
+                  >
+                    {type}
+                  </option>
+
+                )
+              )}
+
             </select>
+
           </div>
 
-          {/* Original Text */}
+
+          {/* =====================================
+              Original Text
+          ====================================== */}
+
           <div className="mb-6">
-            <label className="block font-semibold mb-2">
+
+            <label
+              className="
+                block
+                font-semibold
+                mb-2
+              "
+            >
               Original Verse
             </label>
+
 
             <textarea
               name="text"
@@ -169,76 +354,163 @@ const isSubmitting = useRef(false);
               onChange={handleChange}
               rows="5"
               placeholder="One line per row"
-              className="w-full border rounded-lg p-3"
+              required
+              className="
+                w-full
+                border
+                rounded-lg
+                p-3
+              "
             />
+
           </div>
 
-          {/* Transliteration */}
+
+          {/* =====================================
+              Transliteration
+          ====================================== */}
+
           <div className="mb-6">
-            <label className="block font-semibold mb-2">
+
+            <label
+              className="
+                block
+                font-semibold
+                mb-2
+              "
+            >
               Transliteration
             </label>
 
+
             <textarea
               name="transliteration"
-              value={formData.transliteration}
+              value={
+                formData.transliteration
+              }
               onChange={handleChange}
               rows="5"
               placeholder="Roman transliteration"
-              className="w-full border rounded-lg p-3"
+              required
+              className="
+                w-full
+                border
+                rounded-lg
+                p-3
+              "
             />
+
           </div>
 
-          {/* Hindi Arth */}
+
+          {/* =====================================
+              Hindi Arth
+          ====================================== */}
+
           <div className="mb-6">
-            <label className="block font-semibold mb-2">
+
+            <label
+              className="
+                block
+                font-semibold
+                mb-2
+              "
+            >
               Hindi Arth
             </label>
+
 
             <textarea
               name="arth"
               value={formData.arth}
               onChange={handleChange}
               rows="4"
-              className="w-full border rounded-lg p-3"
+              required
+              className="
+                w-full
+                border
+                rounded-lg
+                p-3
+              "
             />
+
           </div>
 
-          {/* English */}
+
+          {/* =====================================
+              English
+          ====================================== */}
+
           <div className="mb-6">
-            <label className="block font-semibold mb-2">
+
+            <label
+              className="
+                block
+                font-semibold
+                mb-2
+              "
+            >
               English Translation
             </label>
+
 
             <textarea
               name="english"
               value={formData.english}
               onChange={handleChange}
               rows="4"
-              className="w-full border rounded-lg p-3"
+              required
+              className="
+                w-full
+                border
+                rounded-lg
+                p-3
+              "
             />
+
           </div>
 
-          {/* Submit */}
-          <div className="flex justify-center">
+
+          {/* =====================================
+              Submit
+          ====================================== */}
+
+          <div
+            className="
+              flex
+              justify-center
+            "
+          >
 
             <button
               type="submit"
               disabled={isSaving}
               className={`
-                px-8 
-                py-3 
-                rounded-full 
-                bg-orange-500 
-                text-white 
-                hover:bg-orange-600 
+                px-8
+                py-3
+                rounded-full
+                text-white
                 transition
+
                 ${
-                  isSaving ? "bg-gray-400 cursor-not-allowed" : "bg-orange-500 hover:bg-orange-600"
+                  isSaving
+                    ? `
+                      bg-gray-400
+                      cursor-not-allowed
+                    `
+                    : `
+                      bg-orange-500
+                      hover:bg-orange-600
+                    `
                 }
-                `}
+              `}
             >
-              {isSaving ? "Saving..." : "Save Verse"}
+
+              {isSaving
+                ? "Saving..."
+                : "Save Verse"
+              }
+
             </button>
 
           </div>

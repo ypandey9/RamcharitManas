@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import kandNames from "../data/kandNames";
 import Navbar from "../components/Navbar";
 import VerseCard from "../components/VerseCard";
+import Pagination from "../components/Pagination";
 
 import {
   searchVerses,
@@ -401,77 +402,13 @@ export default function SearchPage() {
             Pagination
         ========================================== */}
 
-        {totalPages > 1 && (
+        <Pagination
+  page={page}
+  totalPages={totalPages}
+  setPage={setPage}
+/>
 
-          <div
-            className="
-              flex
-              justify-center
-              gap-3
-              mt-8
-            "
-          >
-
-
-            {/* Previous */}
-
-            <button
-              disabled={page === 0}
-              onClick={() =>
-                setPage(
-                  prev => prev - 1
-                )
-              }
-              className="
-                px-4
-                py-2
-                bg-orange-200
-                rounded
-                disabled:opacity-50
-              "
-            >
-              Previous
-            </button>
-
-
-            {/* Page Number */}
-
-            <span className="px-4 py-2">
-
-              Page {page + 1}
-              {" / "}
-              {totalPages}
-
-            </span>
-
-
-            {/* Next */}
-
-            <button
-              disabled={
-                page >= totalPages - 1
-              }
-              onClick={() =>
-                setPage(
-                  prev => prev + 1
-                )
-              }
-              className="
-                px-4
-                py-2
-                bg-orange-200
-                rounded
-                disabled:opacity-50
-              "
-            >
-              Next
-            </button>
-
-          </div>
-
-        )}
-
-      </div>
+        </div>
 
     </>
   );
